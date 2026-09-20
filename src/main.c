@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "lexer.h"
+#include "parser.h"
+#include "expand.h"
 
 #define MAX_INPUT_SIZE 1024
 #define MAX_HISTORY 100
@@ -68,11 +70,19 @@ int main(void) {
             continue;
         }
 
+        char *expanded_input = expand_variables(input);
+
         int token_count = 0;
-        Token *tokens = tokenize_input(input, &token_count);
+        Token *tokens = tokenize_input(expanded_input, &token_count);
 
         print_tokens(tokens, token_count);
+
+        Command command = parse_tokens(tokens, token_count);
+        print_command(&command);
+
+        free_command(&command);
         free_tokens(tokens, token_count);
+        free(expanded_input);
     }
 
     return 0;
