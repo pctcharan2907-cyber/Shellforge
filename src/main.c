@@ -4,6 +4,7 @@
 #include "lexer.h"
 #include "parser.h"
 #include "expand.h"
+#include "builtin.h"
 
 #define MAX_INPUT_SIZE 1024
 #define MAX_HISTORY 100
@@ -60,16 +61,6 @@ int main(void) {
             history_count++;
         }
 
-        if (strcmp(input, "exit") == 0) {
-            printf("Exiting...\n");
-            break;
-        }
-
-        if (strcmp(input, "history") == 0) {
-            print_history(history, history_count);
-            continue;
-        }
-
         char *expanded_input = expand_variables(input);
 
         int token_count = 0;
@@ -79,6 +70,24 @@ int main(void) {
 
         Command command = parse_tokens(tokens, token_count);
         print_command(&command);
+
+        if (is_builtin(&command)) {
+            int result = execute_builtin(&command);
+
+            free_command(&command);
+            free_tokens(tokens, token_count);
+            free(expanded_input);
+
+            if (result == -1) {
+                break;
+            }
+
+            continue;
+        }
+
+        if (strcmp(input, "history") == 0) {
+            print_history(history, history_count);
+        }
 
         free_command(&command);
         free_tokens(tokens, token_count);
