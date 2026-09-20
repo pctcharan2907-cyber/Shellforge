@@ -1,47 +1,78 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <readline/history.h>
-#include <readline/readline.h>
+#include "lexer.h"
 
-int main(void)
-{
-    // Display a welcome banner when the shell starts
-    printf("=====================================\n");
-    printf(" Shellforge\n");
-    printf(" A Unix Style Shell written in C\n");
-    printf("=====================================\n");
+#define MAX_INPUT_SIZE 1024
+#define MAX_HISTORY 100
 
-    char *line;
+void print_tokens(Token *tokens, int token_count) {
+    printf("\n============ TOKENS ============\n");
 
-    while (1)
-    {
-        line = readline("shellforge$ ");
+    for (int i = 0; i < token_count; i++) {
+        printf("%d : %s", i, token_type_to_string(tokens[i].type));
 
-        if (line == NULL)
-        {
-            printf("\nGoodbye!\n");
+        if (tokens[i].value != NULL) {
+            printf("\t%s", tokens[i].value);
+        }
+
+        printf("\n");
+    }
+
+    printf("================================\n");
+}
+
+void print_history(char history[][MAX_INPUT_SIZE], int history_count) {
+    printf("\n-------- Command History --------\n");
+
+    for (int i = 0; i < history_count; i++) {
+        printf("%d  %s\n", i + 1, history[i]);
+    }
+
+    printf("---------------------------------\n");
+}
+
+int main(void) {
+    char input[MAX_INPUT_SIZE];
+    char history[MAX_HISTORY][MAX_INPUT_SIZE];
+    int history_count = 0;
+
+    printf("ShellForge\n");
+    printf("A Unix Style Shell written in C\n");
+
+    while (1) {
+        printf("\nshellforge$ ");
+
+        if (fgets(input, sizeof(input), stdin) == NULL) {
             break;
         }
 
-        if (strlen(line) == 0)
-        {
-            free(line);
+        input[strcspn(input, "\n")] = '\0';
+
+        if (strlen(input) == 0) {
             continue;
         }
 
-        add_history(line);
+        if (history_count < MAX_HISTORY) {
+            strcpy(history[history_count], input);
+            history_count++;
+        }
 
-        if (strcmp(line, "exit") == 0)
-        {
-            free(line);
+        if (strcmp(input, "exit") == 0) {
             printf("Exiting...\n");
             break;
         }
 
-        printf("YOU ENTERED: %s\n", line);
+        if (strcmp(input, "history") == 0) {
+            print_history(history, history_count);
+            continue;
+        }
 
-        free(line);
+        int token_count = 0;
+        Token *tokens = tokenize_input(input, &token_count);
+
+        print_tokens(tokens, token_count);
+        free_tokens(tokens, token_count);
     }
 
     return 0;
