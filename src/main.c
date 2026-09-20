@@ -69,13 +69,13 @@ int main(void) {
 
         print_tokens(tokens, token_count);
 
-        Command command = parse_tokens(tokens, token_count);
-        print_command(&command);
+        Pipeline pipeline = parse_pipeline(tokens, token_count);
+        print_pipeline(&pipeline);
 
-        if (is_builtin(&command)) {
-            int result = execute_builtin(&command);
+        if (pipeline.command_count == 1 && is_builtin(&pipeline.commands[0])) {
+            int result = execute_builtin(&pipeline.commands[0]);
 
-            free_command(&command);
+            free_pipeline(&pipeline);
             free_tokens(tokens, token_count);
             free(expanded_input);
 
@@ -89,10 +89,10 @@ int main(void) {
         if (strcmp(input, "history") == 0) {
             print_history(history, history_count);
         } else {
-            execute_external(&command);
+            execute_pipeline(&pipeline);
         }
 
-        free_command(&command);
+        free_pipeline(&pipeline);
         free_tokens(tokens, token_count);
         free(expanded_input);
     }
