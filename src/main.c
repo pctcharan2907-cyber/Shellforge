@@ -5,6 +5,7 @@
 #include "parser.h"
 #include "expand.h"
 #include "builtin.h"
+#include "executor.h"
 
 #define MAX_INPUT_SIZE 1024
 #define MAX_HISTORY 100
@@ -87,6 +88,8 @@ int main(void) {
 
         if (strcmp(input, "history") == 0) {
             print_history(history, history_count);
+        } else {
+            execute_external(&command);
         }
 
         free_command(&command);
