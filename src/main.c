@@ -41,8 +41,11 @@ int main(void) {
     char history[MAX_HISTORY][MAX_INPUT_SIZE];
     int history_count = 0;
 
+    setup_background_handler();
+
     printf("ShellForge\n");
     printf("A Unix Style Shell written in C\n");
+    print_student_id();
 
     while (1) {
         printf("\nshellforge$ ");

@@ -4,6 +4,10 @@
 #include <unistd.h>
 #include "builtin.h"
 
+void print_student_id(void) {
+    printf("Student ID: 2500032293\n");
+}
+
 static int builtin_cd(Command *command) {
     char *directory = NULL;
 
