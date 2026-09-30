@@ -1,16 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "lexer.h"
 #include "parser.h"
 #include "expand.h"
 #include "builtin.h"
 #include "executor.h"
+#include "jobs.h"
 
 #define MAX_INPUT_SIZE 1024
 #define MAX_HISTORY 100
 
-void print_tokens(Token *tokens, int token_count) {
+void print_tokens(Token *tokens, int token_count)
+{
     printf("\n============ TOKENS ============\n");
 
     for (int i = 0; i < token_count; i++) {
@@ -26,7 +29,8 @@ void print_tokens(Token *tokens, int token_count) {
     printf("================================\n");
 }
 
-void print_history(char history[][MAX_INPUT_SIZE], int history_count) {
+void print_history(char history[][MAX_INPUT_SIZE], int history_count)
+{
     printf("\n-------- Command History --------\n");
 
     for (int i = 0; i < history_count; i++) {
@@ -36,11 +40,13 @@ void print_history(char history[][MAX_INPUT_SIZE], int history_count) {
     printf("---------------------------------\n");
 }
 
-int main(void) {
+int main(void)
+{
     char input[MAX_INPUT_SIZE];
     char history[MAX_HISTORY][MAX_INPUT_SIZE];
     int history_count = 0;
 
+    jobs_init();
     setup_background_handler();
 
     printf("ShellForge\n");
@@ -48,12 +54,14 @@ int main(void) {
     print_student_id();
 
     while (1) {
+        jobs_reap();
         printf("\nshellforge$ ");
 
         if (fgets(input, sizeof(input), stdin) == NULL) {
             break;
         }
 
+        jobs_reap();
         input[strcspn(input, "\n")] = '\0';
 
         if (strlen(input) == 0) {
@@ -75,7 +83,8 @@ int main(void) {
         Pipeline pipeline = parse_pipeline(tokens, token_count);
         print_pipeline(&pipeline);
 
-        if (pipeline.command_count == 1 && is_builtin(&pipeline.commands[0])) {
+        if (pipeline.command_count == 1 &&
+            is_builtin(&pipeline.commands[0])) {
             int result = execute_builtin(&pipeline.commands[0]);
 
             free_pipeline(&pipeline);
@@ -100,5 +109,6 @@ int main(void) {
         free(expanded_input);
     }
 
+    jobs_reap();
     return 0;
 }
